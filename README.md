@@ -47,37 +47,30 @@ into [Autodesk Forge](https://forge.autodesk.com) Viewer.
 
 ## Browser Support
 
-<figure style="display: inline-block;">
-  <img src="./docs/screenshots/chrome-macos.png" width="250">
-  <figcaption>Chrome/macOS</figcaption>
-</figure>
+### Chrome/macOS
 
-<figure style="display: inline-block;">
-  <img src="./docs/screenshots/firefox-macos.png" width="250">
-  <figcaption>Firefox/macOS</figcaption>
-</figure>
+![Chrome/macOS](./docs/screenshots/chrome-macos.png)
 
-<figure style="display: inline-block;">
-  <img src="./docs/screenshots/safari-macos.png" width="250">
-  <figcaption>Safari/macOS</figcaption>
-</figure>
+### Firefox/macOS
 
-<figure style="display: inline-block;">
-  <img src="./docs/screenshots/chrome-win10.png" width="250">
-  <figcaption>Chrome/Win10</figcaption>
-</figure>
+![Firefox/macOS](./docs/screenshots/firefox-macos.png)
 
-<figure style="display: inline-block;">
-  <img src="./docs/screenshots/firefox-win10.png" width="250">
-  <figcaption>Firefox/Win10</figcaption>
-</figure>
+### Safari/macOS
 
-<figure style="display: inline-block;">
-  <img src="./docs/screenshots/edge-win10.png" width="250">
-  <figcaption>Edge/Win10</figcaption>
-</figure>
+![Safari/macOS](./docs/screenshots/safari-macos.png)
 
-<figure style="display: inline-block;">
-  <img src="./docs/screenshots/safari-ios.png" width="250">
-  <figcaption>Safari/iOS</figcaption>
-</figure>
+### Chrome/Win10
+
+![Chrome/Win10](./docs/screenshots/chrome-win10.png)
+
+### Firefox/Win10
+
+![Firefox/Win10](./docs/screenshots/firefox-win10.png)
+
+### Edge/Win10
+
+![Edge/Win10](./docs/screenshots/edge-win10.png)
+
+### Safari/iOS
+
+![Edge/Win10](./docs/screenshots/safari-ios.png)
