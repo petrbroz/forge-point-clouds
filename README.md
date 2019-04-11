@@ -1,9 +1,9 @@
 # forge-point-clouds
 
-An experiment showing how [THREE.PointCloud](https://github.com/mrdoob/three.js/blob/r71/src/objects/PointCloud.js)
-objects can be integrated into an [Autodesk Forge](https://forge.autodesk.com) application.
+Experimental integration of [THREE.PointCloud](https://github.com/mrdoob/three.js/blob/r71/src/objects/PointCloud.js)
+into [Autodesk Forge](https://forge.autodesk.com) Viewer.
 
-Live demo: https://forge-point-clouds.herokuapp.com
+[Live Demo](https://forge-point-clouds.herokuapp.com)
 
 ## Development
 

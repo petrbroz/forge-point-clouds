@@ -1,7 +1,7 @@
 {
   "name": "forge-point-clouds",
   "version": "0.0.0",
-  "description": "Forge application example of THREE.PointCloud integration.",
+  "description": "Experimental integration of THREE.PointCloud into Autodesk Forge Viewer.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
