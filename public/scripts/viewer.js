@@ -25,10 +25,21 @@ window.addEventListener('DOMContentLoaded', function(ev) {
     });
 });
 
+/**
+ * Makes request to /api/models to get list of models available for viewing.
+ * @returns {Promise<object[]>} Promise that resolves into a list of JavaScript objects,
+ * each containing a _urn_ (base64-encoded ID) of a specific model from Forge.
+ */
 function listModels() {
     return fetch('/api/models').then(resp => resp.json());
 }
 
+/**
+ * Loads specific model and returns list of all its viewable items.
+ * @param {ViewingApplication} app {@link https://forge.autodesk.com/en/docs/viewer/v6/reference/javascript/viewingapplication|ViewingApplication}.
+ * @param {string} urn Base64-encoded ID of model from Forge.
+ * @returns {Promise<object[]>} Promise that resolves into a list of viewable items.
+ */
 function loadModel(app, urn) {
     return new Promise(function(resolve, reject) {
         function onSuccess() { resolve(app.bubble.search({ type: 'geometry' })); }
@@ -37,6 +48,12 @@ function loadModel(app, urn) {
     });
 }
 
+/**
+ * Loads specific viewable into the viewer.
+ * @param {ViewingApplication} app {@link https://forge.autodesk.com/en/docs/viewer/v6/reference/javascript/viewingapplication|ViewingApplication}.
+ * @param {object} viewable JavaScript object representing a viewable item in Forge model.
+ * @returns {Promise} Promise that is resolved when the viewable item is successfully loaded.
+ */
 function loadViewable(app, viewable) {
     return new Promise(function(resolve, reject) {
         function onSuccess() { resolve(); }

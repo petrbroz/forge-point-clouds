@@ -13,6 +13,17 @@ class PointCloudExtension extends Autodesk.Viewing.Extension {
         return true;
     }
 
+    /**
+     * Generates {@link https://github.com/mrdoob/three.js/blob/r71/src/core/BufferGeometry.js|BufferGeometry}
+     * with (_width_ x _length_) positions and varying colors. The resulting geometry will span from -0.5 to 0.5
+     * in X and Y directions, and the Z value and colors are computed as functions of the X and Y coordinates.
+     *
+     * Based on https://github.com/mrdoob/three.js/blob/r71/examples/webgl_interactive_raycasting_pointcloud.html.
+     *
+     * @param {number} width Number of points along the X axis.
+     * @param {number} length Number of points along the Y axis.
+     * @returns {BufferGeometry} Geometry that can be used by {@link https://github.com/mrdoob/three.js/blob/r71/src/objects/PointCloud.js|PointCloud}.
+     */
     _generatePointCloudGeometry(width, length) {
         let geometry = new THREE.BufferGeometry();
         let numPoints = width * length;
@@ -43,7 +54,9 @@ class PointCloudExtension extends Autodesk.Viewing.Extension {
 
     _generatePointCloud(width, length) {
         const geometry = this._generatePointCloudGeometry(width, length);
+        // https://github.com/mrdoob/three.js/blob/r71/src/materials/PointCloudMaterial.js
         const material = new THREE.PointCloudMaterial({ size: PointSize, vertexColors: THREE.VertexColors });
+        // https://github.com/mrdoob/three.js/blob/r71/src/objects/PointCloud.js
         return new THREE.PointCloud(geometry, material);
     }
 }
