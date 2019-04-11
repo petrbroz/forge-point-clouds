@@ -60,22 +60,8 @@ const PointSize = 0.1;
 
 class PointCloudExtension extends Autodesk.Viewing.Extension {
     load() {
-        // let client = new PointCloudStreamClient('ws://localhost:3001');
-        // async function test() {
-        //     await client.connect();
-        //     const bbox = {
-        //         min: { x: 0, y: 0, z: 0 },
-        //         max: { x: 100.0, y: 100.0, z: 100.0 }
-        //     };
-        //     const buff = await client.query(bbox);
-        //     for (let i = 0, len = buff.length; i < len; i += 3) {
-        //         console.log(`Received point (${buff[i]}, ${buff[i + 1]}, ${buff[i + 2]})`);
-        //     }
-        // }
-        // test();
-        this.points = this._generatePointCloud(new THREE.Color(0xffffff), 1000, 1000);
+        this.points = this._generatePointCloud(1000, 1000);
         this.points.scale.set(50.0, 50.0, 50.0);
-        //this.viewer.impl.scene.add(this.points);
         this.viewer.impl.createOverlayScene('pointclouds');
         this.viewer.impl.addOverlay('pointclouds', this.points);
         return true;
@@ -85,11 +71,12 @@ class PointCloudExtension extends Autodesk.Viewing.Extension {
         return true;
     }
 
-    _generatePointCloudGeometry(color, width, length) {
+    _generatePointCloudGeometry(width, length) {
         let geometry = new THREE.BufferGeometry();
         let numPoints = width * length;
         let positions = new Float32Array(numPoints * 3);
         let colors = new Float32Array(numPoints * 3);
+        let color = new THREE.Color();
         let k = 0;
         for (var i = 0; i < width; i++) {
             for (var j = 0; j < length; j++) {
@@ -98,10 +85,10 @@ class PointCloudExtension extends Autodesk.Viewing.Extension {
                 positions[3 * k] = u - 0.5;
                 positions[3 * k + 1] = v - 0.5;
                 positions[3 * k + 2] = (Math.cos(u * Math.PI * 8) + Math.sin(v * Math.PI * 8)) / 20;
-                const intensity = (positions[3 * k + 1] + 0.1) * 5;
-                colors[3 * k] = color.r * intensity;
-                colors[3 * k + 1] = color.g * intensity;
-                colors[3 * k + 2] = color.b * intensity;
+                color.setHSL(u, v, 0.5);
+                colors[3 * k] = color.r;
+                colors[3 * k + 1] = color.g;
+                colors[3 * k + 2] = color.b;
                 k++;
             }
         }
@@ -112,8 +99,8 @@ class PointCloudExtension extends Autodesk.Viewing.Extension {
         return geometry;
     }
 
-    _generatePointCloud(color, width, length) {
-        const geometry = this._generatePointCloudGeometry(color, width, length);
+    _generatePointCloud(width, length) {
+        const geometry = this._generatePointCloudGeometry(width, length);
         const material = new THREE.PointCloudMaterial({ size: PointSize, vertexColors: THREE.VertexColors });
         return new THREE.PointCloud(geometry, material);
     }
