@@ -1,0 +1,14 @@
+{
+  "name": "forge-point-clouds",
+  "version": "0.0.0",
+  "description": "Forge application example of THREE.PointCloud integration.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Petr Broz <petr.broz@autodesk.com>",
+  "dependencies": {
+    "autodesk-forge-tools": "^0.2.0",
+    "express": "^4.16.4"
+  }
+}
