@@ -2,10 +2,20 @@ const PointSize = 0.1;
 
 class PointCloudExtension extends Autodesk.Viewing.Extension {
     load() {
-        this.points = this._generatePointCloud(1000, 1000);
-        this.points.scale.set(50.0, 50.0, 50.0);
+        this.points = this._generatePointCloud(1000000);
+        //this.points.scale.set(100.0, 100.0, 100.0);
         this.viewer.impl.createOverlayScene('pointclouds');
         this.viewer.impl.addOverlay('pointclouds', this.points);
+
+        this.client = new PointCloudStreamClient('ws://localhost:3001');
+        this.client.connect()
+            .then(() => {
+                console.log('Point cloud client connected');
+                this.startStreaming();
+            })
+            .catch((err) => {
+                console.error('Point cloud client could not connect', err);
+            });
         return true;
     }
 
@@ -13,51 +23,110 @@ class PointCloudExtension extends Autodesk.Viewing.Extension {
         return true;
     }
 
-    /**
-     * Generates {@link https://github.com/mrdoob/three.js/blob/r71/src/core/BufferGeometry.js|BufferGeometry}
-     * with (_width_ x _length_) positions and varying colors. The resulting geometry will span from -0.5 to 0.5
-     * in X and Y directions, and the Z value and colors are computed as functions of the X and Y coordinates.
-     *
-     * Based on https://github.com/mrdoob/three.js/blob/r71/examples/webgl_interactive_raycasting_pointcloud.html.
-     *
-     * @param {number} width Number of points along the X axis.
-     * @param {number} length Number of points along the Y axis.
-     * @returns {BufferGeometry} Geometry that can be used by {@link https://github.com/mrdoob/three.js/blob/r71/src/objects/PointCloud.js|PointCloud}.
-     */
-    _generatePointCloudGeometry(width, length) {
-        let geometry = new THREE.BufferGeometry();
-        let numPoints = width * length;
-        let positions = new Float32Array(numPoints * 3);
-        let colors = new Float32Array(numPoints * 3);
-        let color = new THREE.Color();
-        let k = 0;
-        for (var i = 0; i < width; i++) {
-            for (var j = 0; j < length; j++) {
-                const u = i / width;
-                const v = j / length;
-                positions[3 * k] = u - 0.5;
-                positions[3 * k + 1] = v - 0.5;
-                positions[3 * k + 2] = (Math.cos(u * Math.PI * 8) + Math.sin(v * Math.PI * 8)) / 20;
-                color.setHSL(u, v, 0.5);
-                colors[3 * k] = color.r;
-                colors[3 * k + 1] = color.g;
-                colors[3 * k + 2] = color.b;
-                k++;
-            }
-        }
+    startStreaming() {
+        let counter = 0;
+        setInterval(() => {
+            const x = counter % 20;
+            const y = Math.floor((counter % 400) / 20);
+            const bbox = {
+                min: { x: (x - 10) * 10, y: (y - 10) * 10, z: 0 },
+                max: { x: (x - 9) * 10, y: (y - 9) * 10, z: 10 }
+            };
+            const offset = (counter % 100) * 10000;
+            this.client.query(bbox, (data) => {
+                console.log('Point cloud client received data', data);
+                this._updatePointCloud(data, offset);
+                this.viewer.impl.invalidate(true, true, true);
+            });
+            counter = counter + 1;
+        }, 500);
+    }
+
+    _generatePointCloud(numPoints) {
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(numPoints * 3);
+        positions.fill(0.0);
+        const colors = new Float32Array(numPoints * 3);
+        colors.fill(1.0);
         geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
         geometry.computeBoundingBox();
         geometry.isPoints = true; // This flag will force Forge Viewer to render the geometry as gl.POINTS
-        return geometry;
-    }
-
-    _generatePointCloud(width, length) {
-        const geometry = this._generatePointCloudGeometry(width, length);
         // https://github.com/mrdoob/three.js/blob/r71/src/materials/PointCloudMaterial.js
         const material = new THREE.PointCloudMaterial({ size: PointSize, vertexColors: THREE.VertexColors });
         // https://github.com/mrdoob/three.js/blob/r71/src/objects/PointCloud.js
         return new THREE.PointCloud(geometry, material);
+    }
+
+    _updatePointCloud(data, offset = 0) {
+        const geometry = this.points.geometry;
+        const positionAttr = geometry.attributes.position;
+        positionAttr.array.set(data, offset * 3);
+        positionAttr.needsUpdate = true;
+        geometry.computeBoundingBox();
+    }
+}
+
+class PointCloudStreamClient {
+    constructor(url) {
+        this.url = url;
+        this.connection = null;
+        this.counter = 0;
+        this.callbacks = new Map();
+    }
+
+    connect() {
+        return new Promise((resolve, reject) => {
+            this.connection = new WebSocket(this.url);
+            this.connection.binaryType = 'arraybuffer';
+            this.connection.onopen = function(ev) {
+                console.log('Client connection open');
+                resolve(ev);
+            };
+            this.connection.onclose = function(ev) {
+                console.log('Client connection closed');
+            };
+            this.connection.onerror = function(ev) {
+                console.log('Client connection error');
+                reject(ev);
+            };
+            this.connection.onmessage = (ev) => {
+                console.log('Client received message', ev.data);
+                this._recv(ev.data);
+            };
+        });
+    }
+
+    query(bbox, callback) {
+        const queryId = this.counter++;
+        this._send(queryId, bbox);
+        this.callbacks.set(queryId, callback);
+    }
+
+    _send(queryId, bbox) {
+        const buff = new ArrayBuffer(7 * 4);
+        const uints = new Uint32Array(buff);
+        uints[0] = queryId;
+        const floats = new Float32Array(buff, 4, 6);
+        floats[0] = bbox.min.x;
+        floats[1] = bbox.min.y;
+        floats[2] = bbox.min.z;
+        floats[3] = bbox.max.x;
+        floats[4] = bbox.max.y;
+        floats[5] = bbox.max.z;
+        // Send a query ID (uint32) followed by bounding box min x/y/z and max x/y/z (all floats)
+        this.connection.send(buff);
+    }
+
+    _recv(buff) {
+        const uints = new Uint32Array(buff, 0, 2);
+        const queryId = uints[0];
+        const count = uints[1];
+        if (this.callbacks.has(queryId)) {
+            const callback = this.callbacks.get(queryId);
+            callback(new Float32Array(buff, 8, count));
+            this.callbacks.delete(queryId);
+        }
     }
 }
 
