@@ -3,7 +3,7 @@
 Experimental integration of [THREE.PointCloud](https://github.com/mrdoob/three.js/blob/r71/src/objects/PointCloud.js)
 into [Autodesk Forge](https://forge.autodesk.com) Viewer.
 
-[Live Demo](https://forge-point-clouds.herokuapp.com)
+[Live Demo](https://forge-point-clouds.autodesk.io)
 
 ## Development
 
